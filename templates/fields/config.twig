@@ -1,0 +1,14 @@
+{% set title = "Neo Field Configuration" %}
+{# {% set fullPageForm = true %} #}
+
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+
+{# {% block actionButton %}
+    <button type="submit" class="btn icon">Save</a>
+{% endblock %} #}
+
+{% block content %}
+    {{ sprig('neo-config/_sprig/neo-forms') }}    
+    {{ sprig.script }}    
+{% endblock %}

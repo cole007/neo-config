@@ -1,0 +1,108 @@
+
+
+{% import "_includes/forms" as forms %}
+
+{# chooose field #}
+{% set fields = getNeoFields() %}
+{% set fieldHandle = fieldHandle ?? '' %}
+{% set entryType = entryType ?? '' %}
+{% set currentFieldName = '' %}
+{% set currentEnryType = '' %}
+
+<form action="" method="POST">    
+
+    <h2>Fields</h2>
+    <div id="field-handle-field" class="field" data-attribute="field-handle">
+        <div class="heading">
+            <label id="field-handle-label" for="field-handle">What field do you want to configure?</label>
+        </div>
+        <div class="input ltr">
+            <div class="select">
+                <select id="field-handle" name="fieldHandle" aria-labelledby="field-handle-label" sprig>
+                    <option value="">Choose a Field</option>
+                    {% for handle, field in fields %}
+                    <option {{ handle == fieldHandle ? ' selected' }} value="{{ handle }}">{{ field }}</option>                
+                    {% if handle == fieldHandle %}{% set currentFieldName = field %}{% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    {# chooose sections/entry types #}
+
+    {% if fieldHandle %}        
+        {% set getEntryTypes = getEntryTypes(fieldHandle) %}
+        <h2>Entry Type</h2>
+        <div id="field-handle-field" class="field" data-attribute="field-handle">
+            <div class="heading">
+                <label id="entry-type-handle-label" for="entry-type-handle">What entry type do you want to configure?</label>
+            </div>
+            <div class="input ltr">
+                <div class="select">
+                    {#
+                        TO DO:                    
+                        change from checkbox to select
+                        add "Choose Option"
+                        add option to choose ALL entry types                        
+                    #}
+                    <select id="entry-type-handle" name="entryType" aria-labelledby="entry-type-handle-label" sprig>
+                        {% for key, section in getEntryTypes.sections %}
+                            <optgroup label="{{ section }}">
+                            {% for typeId, typeType in getEntryTypes.entryTypes[key] %}
+                            <option {{ typeId == entryType ? ' selected' }} value="{{ typeId }}">{{ typeType }}</option>
+                            {% if typeId == entryType %}{% set currentEnryType = typeType %}{% endif %}
+                            {% endfor %}
+                            </optgroup>
+                        {% endfor %}                    
+                    </select>
+                </div>
+                {% if getEntryTypes.entryTypes|length == 1 %}
+                <button class="btn" type="submit">Refresh</button>
+                {% endif %}
+            </div>
+        </div>    
+    {% endif %}
+
+    {# chooose blocks #}
+
+    {% if fieldHandle and entryType %}
+        <h2>Blocks</h2>        
+        {% set neoBlocks = getNeoBlocks( fieldHandle ) %}
+        {#
+            Things to consider        
+        #}
+        <div id="block-handle-field" class="field" data-attribute="block-handle">        
+            <div class="heading">
+                <label id="block-handle-label" for="block-type-handle">What block types do you want to enable?</label>
+            </div>
+            {# <div id="block-handle-instructions" class="instructions">
+                <p>Pick the block type you want to show for the <strong>{{ currentFieldName }}</strong> field</p>
+            </div> #}
+            <div class="input ltr">
+                <fieldset class="checkbox-group">                    
+                    {% set neoConfig = getNeoConfig(fieldHandle, entryType) %}        
+                    {% for handle, block in neoBlocks %}            
+                        {% set  name = block.name %}
+                        {% set  topLevel = block.topLevel %}
+                    <div>
+                        <input type="checkbox" id="block-handle-{{ handle }}" class="checkbox" {{ handle in neoConfig ? ' checked' }} name="blocks[]" value="{{ handle }}" {# aria-describedby="block-handle-instructions"#}>
+                        <label for="block-handle-{{ handle }}">
+                            {% if topLevel %}
+                                <b>{{name}}</b>
+                            {% else %}
+                                <span> - {{name}}</span>
+                            {% endif %}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </fieldset>            
+            </div>
+        </div>        
+        {{ csrfInput() }}
+        <button type="submit" class="btn submit">Save</button>
+        <input type="hidden" name="action" value="neo-config/neo-config">        
+        {{ redirectInput('neo-config/fields/config') }}
+    {% endif %}
+
+</form>
